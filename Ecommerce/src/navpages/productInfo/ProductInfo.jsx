@@ -5,6 +5,9 @@ import { useParams } from "react-router";
 import { fireDB } from "../../firebase/FirebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import Loader from "../../components/loader/Loader";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, deleteFromCart } from "../../redux/cartSlice";
+import toast from "react-hot-toast";
 
 const ProductInfo = () => {
     const context = useContext(myContext);
@@ -21,12 +24,25 @@ const ProductInfo = () => {
         setLoading(true)
         try {
             const productTemp = await getDoc(doc(fireDB, "products", id))
-            setProduct(productTemp.data());
+            setProduct({...productTemp.data(), id : productTemp.id})
             setLoading(false)
         } catch (error) {
             console.log(error)
             setLoading(false)
         }
+    }
+    const cartItems = useSelector((state) => state.cart);
+    const dispatch = useDispatch();
+
+    const addCart = (item) => {
+        // console.log(item)
+        dispatch(addToCart(item));
+        toast.success("Add to cart")
+    }
+
+    const deleteCart = (item) => {
+        dispatch(deleteFromCart(item));
+        toast.success("Delete cart")
     }
 
 
@@ -140,10 +156,28 @@ const ProductInfo = () => {
                                         <div className="flex flex-wrap items-center mb-6">
 
 
+                                        {cartItems.some((p) => p.id === product.id)
+                                                ?
+                                                <button
+                                                    onClick={() => deleteCart(product)}
+                                                    className="w-full px-4 py-3 text-center text-white bg-red-500 border border--600  hover:bg-red-400 hover:text-gray-100  rounded-xl"
+                                                >
+                                                    Delete From Cart
+                                                </button>
+                                                :
+                                                <button
+                                                    onClick={() => addCart(product)}
+                                                    className="w-full px-4 py-3 text-center text-grey-600 bg-pink-500 border border-blue-600  hover:bg-blue-800 hover:text-gray-100  rounded-xl"
+                                                >
+                                                    Add to Cart
+                                                </button>
+                                            }
+                                        </div>
+                                        <div className="flex gap-4 mb-6">
                                             <button
-                                                className="w-full px-4 py-3 text-center text-red-600 bg-red-100 border border-red-600  hover:bg-red-600 hover:text-gray-100  rounded-xl"
+                                                className="w-full px-4 py-3 text-center text-gray-100 bg-blue-600 border border-transparent dark:border-gray-700 hover:border-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-xl"
                                             >
-                                                Add to cart
+                                                Buy Now
                                             </button>
                                         </div>
                                     </div>
